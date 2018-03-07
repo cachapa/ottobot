@@ -5,33 +5,40 @@ import 'dart:io';
 import 'config.dart';
 
 class Mattermost {
-  var _endpoint;
-  var _token;
-  var _userId;
-  var _teamId;
+  _RestGateway _restGateway;
 
-  Mattermost() {
-    _endpoint =
-        (SECURE_SOCKET ? "https" : "http") + "://" + MATTERMOST_URL + "/api/v4";
-  }
+  connect(EventCallback callback) async {
+    _restGateway = new _RestGateway();
 
-  connect() async {
     // Login and get token
-    await _refreshToken();
-
-    // Fetch team id
-    _teamId = (await _get("/teams/name/$TEAM_NAME"))["id"];
+    await _restGateway.login();
 
     // Start listening to commands
-    new SocketGateway(_token).connectSocket();
+    new _SocketGateway(callback).connectSocket(_restGateway._token);
   }
 
-  post(String channel, String message) async {
-    var channelId = await _getChannelId(channel);
-    _post("/posts", {"channel_id": channelId, "message": message});
+  post({String channel, String channelId, String message}) async {
+    assert((channel != null && channelId == null) ||
+        (channel == null && channelId != null));
+    if (channel != null) {
+      channelId = await _restGateway._getChannelId(channel);
+    }
+    _restGateway.post(channelId, message);
   }
+}
 
-  _refreshToken() async {
+class _RestGateway {
+  final _endpoint;
+  var _token;
+  var _teamId;
+
+  _RestGateway()
+      : _endpoint = (SECURE_SOCKET ? "https" : "http") +
+            "://" +
+            MATTERMOST_URL +
+            "/api/v4";
+
+  login() async {
     var endpoint = _endpoint + "/users/login";
     var body = {"login_id": USERNAME, "password": PASSWORD};
     print("--> POST $endpoint");
@@ -39,12 +46,17 @@ class Mattermost {
 
     var response = await http.post(endpoint, body: JSON.encode(body));
     _token = response.headers["token"];
-    _userId = JSON.decode(response.body)["id"];
     print("token: $_token");
-    print("userId: $_userId\n");
+
+    // Fetch team id
+    _teamId = (await _get("/teams/name/$TEAM_NAME"))["id"];
   }
 
-  _getChannelId(channel) async {
+  post(String channelId, String message) async {
+    _post("/posts", {"channel_id": channelId, "message": message});
+  }
+
+  getChannelId(channel) async {
     // TODO Cache channel id
     return (await _get("/teams/$_teamId/channels/name/$channel"))["id"];
   }
@@ -75,19 +87,18 @@ class Mattermost {
   }
 }
 
-class SocketGateway {
-  var _endpoint;
-  var _token;
+class _SocketGateway {
+  final _endpoint;
+  final EventCallback _callback;
 
-  SocketGateway(this._token) {
-    _endpoint = (SECURE_SOCKET ? "wss" : "ws") +
-        "://" +
-        MATTERMOST_URL +
-        "/api/v4/websocket";
-  }
+  _SocketGateway(this._callback)
+      : _endpoint = (SECURE_SOCKET ? "wss" : "ws") +
+            "://" +
+            MATTERMOST_URL +
+            "/api/v4/websocket";
 
   WebSocket _socket;
-  connectSocket() async {
+  connectSocket(var token) async {
     print("Connecting...");
     _socket = await WebSocket.connect(_endpoint);
     _socket.pingInterval = new Duration(seconds: 5);
@@ -95,14 +106,34 @@ class SocketGateway {
     _socket.add(JSON.encode({
       "seq": 1,
       "action": "authentication_challenge",
-      "data": {"token": _token}
+      "data": {"token": token}
     }));
 
     _socket.listen(
-      (event) => print("<-- $event\n"),
+      (event) => _handleEvent(JSON.decode(event)),
       onDone: () => print("Done"),
       onError: (error) => print(error),
       cancelOnError: false,
     );
   }
+
+  _handleEvent(var event) {
+    print("<-- $event\n");
+
+    var type = event["event"];
+    switch (type) {
+      case "posted":
+        var sender = event["data"]["sender_name"];
+        if (sender != USERNAME) {
+          var post = JSON.decode(event["data"]["post"]);
+          String message = post["message"];
+          if (message.contains("@$USERNAME")) {
+            _callback(sender, post["channel_id"], message);
+          }
+        }
+        break;
+    }
+  }
 }
+
+typedef void EventCallback(String sender, String channelId, String message);
