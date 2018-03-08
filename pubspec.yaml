@@ -2,5 +2,4 @@ name: lunchbot
 description: A Mattermost bot for fetching lunch menus
 
 dependencies:
-  slack: "^1.2.2"
-  
+  http: "^0.11.3+16"

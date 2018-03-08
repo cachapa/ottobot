@@ -36,11 +36,10 @@ class LunchBot {
   }
 
   _postHelp(String channelId) {
-    _mattermost.post(channelId: channelId, message: "Still assembling...");
+    _mattermost.post(channelId, "Still assembling...");
   }
 
   _postWut(String channelId) {
-    _mattermost.post(
-        channelId: channelId, message: wut[new Random().nextInt(wut.length)]);
+    _mattermost.post(channelId, wut[new Random().nextInt(wut.length)]);
   }
 }

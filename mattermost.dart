@@ -6,31 +6,67 @@ import 'config.dart';
 
 class Mattermost {
   _RestGateway _restGateway;
+  _SocketGateway _socketGateway;
 
-  connect(EventCallback callback) async {
+  PostCallback _postCallback;
+
+  var _teamId;
+  Map<String, String> _channelMap = new Map();
+
+  connect(postCallback) async {
+    _postCallback = postCallback;
     _restGateway = new _RestGateway();
 
     // Login and get token
     await _restGateway.login();
+    _teamId = (await _restGateway.get("/teams/name/$TEAM_NAME"))["id"];
 
     // Start listening to commands
-    new _SocketGateway(callback).connectSocket(_restGateway._token);
+    _socketGateway = new _SocketGateway((event) => _handleEvent(event))
+        .connectSocket(_restGateway._token);
   }
 
-  post({String channel, String channelId, String message}) async {
-    assert((channel != null && channelId == null) ||
-        (channel == null && channelId != null));
-    if (channel != null) {
-      channelId = await _restGateway._getChannelId(channel);
+  disconnect() {
+    _socketGateway._socket.close();
+  }
+
+  post(String channelId, String message) async {
+    _restGateway.post("/posts", {"channel_id": channelId, "message": message});
+  }
+
+  getChannelId(channelName) async {
+    // Cache channel id
+    if (!_channelMap.containsKey(channelName)) {
+      String channelId = (await _restGateway
+          .get("/teams/$_teamId/channels/name/$channelName"))["id"];
+      _channelMap[channelName] = channelId;
     }
-    _restGateway.post(channelId, message);
+    return _channelMap[channelName];
+  }
+
+  _handleEvent(var event) {
+    print("<-- $event\n");
+
+    var type = event["event"];
+    switch (type) {
+      case "posted":
+        var sender = event["data"]["sender_name"];
+        if (sender != USERNAME) {
+          var channelType = event["data"]["channel_type"];
+          var post = JSON.decode(event["data"]["post"]);
+          String message = post["message"];
+          if (message.contains("@$USERNAME") || channelType == "D") {
+            _postCallback(sender, post["channel_id"], message);
+          }
+        }
+        break;
+    }
   }
 }
 
 class _RestGateway {
   final _endpoint;
   var _token;
-  var _teamId;
 
   _RestGateway()
       : _endpoint = (SECURE_SOCKET ? "https" : "http") +
@@ -42,26 +78,14 @@ class _RestGateway {
     var endpoint = _endpoint + "/users/login";
     var body = {"login_id": USERNAME, "password": PASSWORD};
     print("--> POST $endpoint");
-    print("    $body");
+    print("    ${body.toString().replaceAll(PASSWORD, "******")}");
 
     var response = await http.post(endpoint, body: JSON.encode(body));
     _token = response.headers["token"];
     print("token: $_token");
-
-    // Fetch team id
-    _teamId = (await _get("/teams/name/$TEAM_NAME"))["id"];
   }
 
-  post(String channelId, String message) async {
-    _post("/posts", {"channel_id": channelId, "message": message});
-  }
-
-  getChannelId(channel) async {
-    // TODO Cache channel id
-    return (await _get("/teams/$_teamId/channels/name/$channel"))["id"];
-  }
-
-  _get(String path) async {
+  get(String path) async {
     var endpoint = _endpoint + path;
     print("--> GET $endpoint");
 
@@ -71,7 +95,7 @@ class _RestGateway {
     return JSON.decode(response.body);
   }
 
-  _post(String path, dynamic body) async {
+  post(String path, dynamic body) async {
     var endpoint = _endpoint + path;
     print("--> POST $endpoint");
     print("    $body");
@@ -89,7 +113,7 @@ class _RestGateway {
 
 class _SocketGateway {
   final _endpoint;
-  final EventCallback _callback;
+  final _EventCallback _callback;
 
   _SocketGateway(this._callback)
       : _endpoint = (SECURE_SOCKET ? "wss" : "ws") +
@@ -103,37 +127,25 @@ class _SocketGateway {
     _socket = await WebSocket.connect(_endpoint);
     _socket.pingInterval = new Duration(seconds: 5);
     print("Connected");
-    _socket.add(JSON.encode({
+
+    // Authenticate the socket connection
+    var auth = {
       "seq": 1,
       "action": "authentication_challenge",
       "data": {"token": token}
-    }));
+    };
+    print("--> $auth");
+    _socket.add(JSON.encode(auth));
 
     _socket.listen(
-      (event) => _handleEvent(JSON.decode(event)),
+      (event) => _callback(JSON.decode(event)),
       onDone: () => print("Done"),
       onError: (error) => print(error),
       cancelOnError: false,
     );
   }
-
-  _handleEvent(var event) {
-    print("<-- $event\n");
-
-    var type = event["event"];
-    switch (type) {
-      case "posted":
-        var sender = event["data"]["sender_name"];
-        if (sender != USERNAME) {
-          var post = JSON.decode(event["data"]["post"]);
-          String message = post["message"];
-          if (message.contains("@$USERNAME")) {
-            _callback(sender, post["channel_id"], message);
-          }
-        }
-        break;
-    }
-  }
 }
 
-typedef void EventCallback(String sender, String channelId, String message);
+typedef void _EventCallback(Map event);
+
+typedef void PostCallback(String sender, String channelId, String message);

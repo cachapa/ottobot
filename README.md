@@ -9,7 +9,7 @@ Lunchbot is a dart command-line application and requires only the [dart-vm](http
 ```shell
 git clone [this repository]
 cd lunchbot
-pub fetch
+pub get
 dart lunchbot.dart
 ```
 
