@@ -13,3 +13,7 @@ doc/api/
 
 # Avoid exposing the config file where credentials are stored
 config.dart
+
+# Temp files
+*.pdf
+*.txt

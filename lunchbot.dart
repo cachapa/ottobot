@@ -1,22 +1,22 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'mattermost.dart';
+import 'restaurant.dart';
+
+import 'annahotel.dart';
+import 'cafecord.dart';
+import 'parkcafe.dart';
 
 main() async {
   new LunchBot().listen();
 }
 
 class LunchBot {
-  final wut = [
-    "wut?",
-    "was?",
-    "wat?",
-    "quê?",
-    "wis?",
-    "¯\_(ツ)_/¯",
-    "?",
-    "ja, mei",
-    "bast scho"
+  List<Restaurant> restaurants = [
+    new AnnaHotel(),
+    new CafeCord(),
+    new ParkCafe(),
   ];
 
   Mattermost _mattermost = new Mattermost();
@@ -24,22 +24,31 @@ class LunchBot {
   listen() async {
     await _mattermost.connect(
         (sender, channelId, message) => _parse(sender, channelId, message));
-    // mattermost.post("test", "ottobot online");
   }
 
   _parse(String sender, String channelId, String message) {
-    if (message.contains("help")) {
-      _postHelp(channelId);
+    if (message.contains("lunch")) {
+      _postMenu(channelId);
     } else {
-      _postWut(channelId);
+      _postHelp(channelId);
     }
   }
 
-  _postHelp(String channelId) {
-    _mattermost.post(channelId, "Still assembling...");
+  _postMenu(String channelId) async {
+    var weekday = new DateTime.now().weekday;
+
+    var futures = new List();
+    restaurants.forEach((r) => futures.add(r.getMenu(weekday)));
+    Future.wait(futures).then((menus) {
+      List<String> message = new List();
+      menus.forEach((menu) => message.add(menu));
+      _mattermost.post(channelId, message.join("\n---\n"));
+    });
   }
 
-  _postWut(String channelId) {
-    _mattermost.post(channelId, wut[new Random().nextInt(wut.length)]);
+  _postHelp(String channelId) {
+    var message = "**Currently available commands are:**\n";
+    message += "`lunch` Display lunch menus from restaurants around the area";
+    _mattermost.post(channelId, message);
   }
 }
