@@ -22,8 +22,8 @@ class Mattermost {
     _teamId = (await _restGateway.get("/teams/name/$TEAM_NAME"))["id"];
 
     // Start listening to commands
-    _socketGateway = new _SocketGateway((event) => _handleEvent(event))
-        .connectSocket(_restGateway._token);
+    _socketGateway = new _SocketGateway((event) => _handleEvent(event));
+    _socketGateway.connectSocket(_restGateway._token);
   }
 
   disconnect() {
@@ -42,6 +42,10 @@ class Mattermost {
       _channelMap[channelName] = channelId;
     }
     return _channelMap[channelName];
+  }
+
+  notifyTyping(String channelId) {
+    _socketGateway.send("user_typing", {"channel_id": channelId});
   }
 
   _handleEvent(var event) {
@@ -114,6 +118,7 @@ class _RestGateway {
 class _SocketGateway {
   final _endpoint;
   final _EventCallback _callback;
+  var _seq = 0;
 
   _SocketGateway(this._callback)
       : _endpoint = (SECURE_SOCKET ? "wss" : "ws") +
@@ -129,20 +134,27 @@ class _SocketGateway {
     print("Connected");
 
     // Authenticate the socket connection
-    var auth = {
-      "seq": 1,
-      "action": "authentication_challenge",
-      "data": {"token": token}
-    };
-    print("--> $auth");
-    _socket.add(JSON.encode(auth));
+    send("authentication_challenge", {"token": token});
 
+    // Start listening to events
     _socket.listen(
-      (event) => _callback(JSON.decode(event)),
+      (event) {
+        var map = JSON.decode(event);
+        if (map.containsKey("seq")) {
+          _seq = map["seq"];
+        }
+        _callback(map);
+      },
       onDone: () => print("Done"),
       onError: (error) => print(error),
       cancelOnError: false,
     );
+  }
+
+  send(String action, Map data) {
+    var payload = {"seq": _seq + 1, "action": action, "data": data};
+    print("--> $payload");
+    _socket.add(JSON.encode(payload));
   }
 }
 

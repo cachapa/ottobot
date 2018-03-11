@@ -35,8 +35,9 @@ class LunchBot {
   }
 
   _postMenu(String channelId) async {
-    var weekday = new DateTime.now().weekday;
+    _mattermost.notifyTyping(channelId);
 
+    var weekday = new DateTime.now().weekday;
     var futures = new List();
     restaurants.forEach((r) => futures.add(r.getMenu(weekday)));
     Future.wait(futures).then((menus) {
