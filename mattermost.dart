@@ -34,7 +34,18 @@ class Mattermost {
     _restGateway.post("/posts", {"channel_id": channelId, "message": message});
   }
 
-  getChannelId(channelName) async {
+  postToChannel(String channelName, String message) async {
+    var channelId = await getChannelId(channelName);
+    post(channelId, message);
+  }
+
+  postDirectMessage(String userName, String message) async {
+    var userId = await getUserId(userName);
+    var channelId = await getDirectChannelId(userId);
+    post(channelId, message);
+  }
+
+  getChannelId(String channelName) async {
     // Cache channel id
     if (!_channelMap.containsKey(channelName)) {
       String channelId = (await _restGateway
@@ -42,6 +53,15 @@ class Mattermost {
       _channelMap[channelName] = channelId;
     }
     return _channelMap[channelName];
+  }
+
+  getDirectChannelId(String userId) async {
+    return (await _restGateway
+        .post("/channels/direct", [_restGateway._userId, userId]))["id"];
+  }
+
+  getUserId(String username) async {
+    return (await _restGateway.get("/users/username/$username"))["id"];
   }
 
   notifyTyping(String channelId) {
@@ -71,6 +91,7 @@ class Mattermost {
 class _RestGateway {
   final _endpoint;
   var _token;
+  var _userId;
 
   _RestGateway()
       : _endpoint = (SECURE_SOCKET ? "https" : "http") +
@@ -85,8 +106,10 @@ class _RestGateway {
     print("    ${body.toString().replaceAll(PASSWORD, "******")}");
 
     var response = await http.post(endpoint, body: JSON.encode(body));
+    var map = JSON.decode(response.body);
+    print("<-- $map");
     _token = response.headers["token"];
-    print("token: $_token");
+    _userId = map["id"];
   }
 
   get(String path) async {
@@ -102,16 +125,13 @@ class _RestGateway {
   post(String path, dynamic body) async {
     var endpoint = _endpoint + path;
     print("--> POST $endpoint");
-    print("    $body");
+    print("    ${JSON.encode(body)}");
 
-    http
-        .post(endpoint,
-            headers: {"Authorization": "Bearer $_token"},
-            body: JSON.encode(body))
-        .then((response) {
-      print("Response status: ${response.statusCode}");
-      print("Response body: ${response.body}\n");
-    });
+    var response = await http.post(endpoint,
+        headers: {"Authorization": "Bearer $_token"}, body: JSON.encode(body));
+    print("Response status: ${response.statusCode}");
+    print("Response body: ${response.body}\n");
+    return JSON.decode(response.body);
   }
 }
 

@@ -24,6 +24,9 @@ class LunchBot {
   listen() async {
     await _mattermost.connect(
         (sender, channelId, message) => _parse(sender, channelId, message));
+
+        // Notify we're online via direct message
+        _mattermost.postDirectMessage("daniel.cachapa", "ottobot online");
   }
 
   _parse(String sender, String channelId, String message) {
