@@ -27,10 +27,10 @@ class LunchBot {
   }
 
   _parse(String sender, String channelId, String message) {
-    if (message.contains("lunch")) {
-      _postMenu(channelId);
+    if (message.contains("about")) {
+      _postAbout(channelId);
     } else {
-      _postHelp(channelId);
+      _postMenu(channelId);
     }
   }
 
@@ -50,6 +50,12 @@ class LunchBot {
   _postHelp(String channelId) {
     var message = "**Currently available commands are:**\n";
     message += "`lunch` Display lunch menus from restaurants around the area";
+    _mattermost.post(channelId, message);
+  }
+
+  _postAbout(String channelId) {
+    var message = "version `0.1`\n";
+    message += "[GitHub](https://github.com/cachapa/lunchbot)";
     _mattermost.post(channelId, message);
   }
 }
