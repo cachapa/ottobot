@@ -1,6 +1,8 @@
 import 'package:http/http.dart' as http;
 import 'package:html/parser.dart' show parse;
 
+import 'dart:convert';
+
 import 'restaurant.dart';
 
 class ParkCafe extends Restaurant {
@@ -27,15 +29,17 @@ class ParkCafe extends Restaurant {
 
     var weekdayName = WEEKDAYS[weekday];
 
-    var document = parse(response.body);
+    var document = parse(UTF8.decode(response.bodyBytes));
     var tags = document.getElementsByTagName("td");
     List<Dish> dishes = new List();
     for (int i = 0; i < tags.length; i++) {
       var tag = tags[i];
-      if (tag.text.trim().toLowerCase().startsWith(weekdayName)) {
+      if (tag.text.trimLeft().toLowerCase().startsWith(weekdayName)) {
+        dishes.add(new Dish(
+            tags[i + 4].text.trim(), "Mittagsgericht", tags[i + 5].text));
         dishes.add(
-            new Dish(tags[i + 4].text, "Mittagsgericht", tags[i + 5].text));
-        dishes.add(new Dish(tags[i + 7].text, "Low Carb", tags[i + 8].text));
+            new Dish(
+              HTML_ESCAPE.convert(tags[i + 7].text.trim()), "Low Carb", tags[i + 8].text));
         break;
       }
     }
