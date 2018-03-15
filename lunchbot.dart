@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'mattermost.dart';
 import 'restaurant.dart';
@@ -25,8 +24,30 @@ class LunchBot {
     await _mattermost.connect(
         (sender, channelId, message) => _parse(sender, channelId, message));
 
-        // Notify we're online via direct message
-        _mattermost.postDirectMessage("daniel.cachapa", "ottobot online");
+    // Notify we're online via direct message
+    _mattermost.postDirectMessage("daniel.cachapa", "ottobot online");
+
+    // Schedule a post at 11:00 the next day
+    _schedulePost();
+  }
+
+  _schedulePost() {
+    var now = new DateTime.now();
+    var then = new DateTime(now.year, now.month, now.day + 1, 11);
+
+    var duration = then.difference(now);
+    print("Posting menu in [$duration");
+    new Timer(duration, () async {
+      print("Posting scheduled menu...");
+
+      // Don't post on the weekend
+      if (then.weekday <= 5) {
+        _postMenu(await _mattermost.getChannelId("lunch-it"));
+      }
+
+      // Schedule another post for tomorrow
+      _schedulePost();
+    });
   }
 
   _parse(String sender, String channelId, String message) {
