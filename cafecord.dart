@@ -5,7 +5,7 @@ import 'restaurant.dart';
 class CafeCord extends Restaurant {
   static const NAME = "Cafe Cord";
   static const RESTAURANT_URL = "https://www.cafe-cord.tv";
-  static const MENU_URL = "https://www.cafe-cord.tv/uploads/mittagskarte.pdf";
+  static const MENU_URL = "https://www.cafe-cord.tv/uploads/mittagskarte.pdf?1";
 
   @override
   getMenu(int weekday) async {
