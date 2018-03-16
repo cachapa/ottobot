@@ -2,4 +2,5 @@ const SECURE_SOCKET = true;
 const MATTERMOST_URL = "mattermost.domain.tld";
 const USERNAME = "username";
 const PASSWORD = "password";
+const ACCESS_TOKEN = "token";
 const TEAM_NAME = "team";

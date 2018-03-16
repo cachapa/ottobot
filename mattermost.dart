@@ -11,6 +11,7 @@ class Mattermost {
   PostCallback _postCallback;
 
   var _teamId;
+  var _userId;
   Map<String, String> _channelMap = new Map();
 
   connect(postCallback) async {
@@ -18,8 +19,13 @@ class Mattermost {
     _restGateway = new _RestGateway();
 
     // Login and get token
-    await _restGateway.login();
+    if (ACCESS_TOKEN == null || ACCESS_TOKEN.length == 0) {
+      await _restGateway.login();
+    } else {
+      _restGateway._token = ACCESS_TOKEN;
+    }
     _teamId = (await _restGateway.get("/teams/name/$TEAM_NAME"))["id"];
+    _userId= await getUserId(USERNAME);
 
     // Start listening to commands
     _socketGateway = new _SocketGateway((event) => _handleEvent(event));
@@ -57,7 +63,7 @@ class Mattermost {
 
   getDirectChannelId(String userId) async {
     return (await _restGateway
-        .post("/channels/direct", [_restGateway._userId, userId]))["id"];
+        .post("/channels/direct", [_userId, userId]))["id"];
   }
 
   getUserId(String username) async {
@@ -91,7 +97,6 @@ class Mattermost {
 class _RestGateway {
   final _endpoint;
   var _token;
-  var _userId;
 
   _RestGateway()
       : _endpoint = (SECURE_SOCKET ? "https" : "http") +
@@ -109,7 +114,6 @@ class _RestGateway {
     var map = JSON.decode(response.body);
     print("<-- $map");
     _token = response.headers["token"];
-    _userId = map["id"];
   }
 
   get(String path) async {
