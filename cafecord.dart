@@ -1,47 +1,35 @@
-import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:html/parser.dart' show parse;
+
+import 'dart:convert';
 
 import 'restaurant.dart';
 
 class CafeCord extends Restaurant {
   static const NAME = "Cafe Cord";
   static const RESTAURANT_URL = "https://www.cafe-cord.tv";
-  static const MENU_URL = "https://www.cafe-cord.tv/uploads/mittagskarte.pdf?1";
+  static const MENU_URL = "https://www.cafe-cord.tv";
 
   @override
   getMenu(int weekday) async {
     print("--> GET $MENU_URL");
 
-    await Process.run("wget", ["-qO", "cafecord.pdf", MENU_URL]);
-    await Process.run("pdftotext", ["cafecord.pdf"]);
-    var result = await Process.run("cat", ["cafecord.txt"]);
-    var lines = result.stdout.split("\n");
+    var response = await http.get(MENU_URL);
+    print("<-- ${response.statusCode} OK\n");
 
-    // TODO Make sure that we're parsing today's menu
+    var document = parse(UTF8.decode(response.bodyBytes));
+    var tags = document.getElementsByClassName("col-xs-12 col-sm-7");
+    var menuTags = tags[0].children;
 
-    bool isDishes = false;
-    String name = "";
-    String description = "";
     List<Dish> dishes = new List();
-    for (int i = 0; i < lines.length; i++) {
-      String line = lines[i].trim();
-      if (line.isEmpty || line.toLowerCase() == "guten appetit") continue;
+    for (int i = 1; i < menuTags.length - 1; i++) {
+      var tag = menuTags[i];
 
-      if (line.toLowerCase() == "mittagskarte") {
-        isDishes = true;
-        continue;
-      }
+      var name = tag.firstChild.text;
+      var description = tag.nodes[2].text;
+      var price = tag.nodes[4].text.replaceAll("EUR ", "");
 
-      if (isDishes) {
-        if (name.isEmpty)
-          name = line;
-        else if (line.contains("€")) {
-          dishes.add(
-              new Dish(name, description, line.replaceAll("€", "").trim()));
-          name = "";
-          description = "";
-        } else
-          description += (description.isNotEmpty ? " | " : "") + line;
-      }
+      dishes.add(new Dish(name, description, price));
     }
     return new Menu(NAME, RESTAURANT_URL, dishes);
   }

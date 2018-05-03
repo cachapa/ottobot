@@ -30,7 +30,7 @@ class AnnaHotel extends Restaurant {
 
     var document = parse(response.body);
     var tags = document.getElementsByClassName("pdf-download");
-    var pdfUrl = tags[1].attributes["href"];
+    var pdfUrl = tags[0].attributes["href"];
 
     await Process.run("wget", ["-qO", "annahotel.pdf", pdfUrl]);
     var result = await Process
@@ -45,9 +45,7 @@ class AnnaHotel extends Restaurant {
         var name = nodes[i + 4].text;
         // Filter out price
         name = name.contains(price) ? name.substring(0, name.indexOf(price)) : name;
-        var description = nodes[i + 7].text;
-
-        print(name);
+        var description = nodes[i + 9].text;
 
         dishes.add(new Dish(name, description, price));
         break;
