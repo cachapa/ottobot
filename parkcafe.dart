@@ -36,10 +36,10 @@ class ParkCafe extends Restaurant {
       var tag = tags[i];
       if (tag.text.trimLeft().toLowerCase().startsWith(weekdayName)) {
         dishes.add(new Dish(
-            tags[i + 4].text.trim(), "Mittagsgericht", tags[i + 5].text));
+            tags[i + 4].text.trim(), "Mittagsgericht", tags[i + 5].text.trim()));
         dishes.add(
             new Dish(
-              HTML_ESCAPE.convert(tags[i + 7].text.trim()), "Low Carb", tags[i + 8].text));
+              HTML_ESCAPE.convert(tags[i + 7].text.trim()), "Low Carb", tags[i + 8].text.trim()));
         break;
       }
     }
