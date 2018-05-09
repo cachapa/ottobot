@@ -7,7 +7,7 @@ class Dish {
   final String description;
   final String price;
 
-  Dish(this.name, this.description, this.price);
+  Dish(this.name.trim(), this.description.trim(), this.price.trim());
 
   String toString() {
     return "**$name**\n_${description}_ `$price €`";
