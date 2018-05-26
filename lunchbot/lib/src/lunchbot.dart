@@ -27,22 +27,26 @@ class LunchBot {
   }
 
   _schedulePost() {
-    var now = new DateTime.now();
-    var then = new DateTime(now.year, now.month, now.day + 1, 11);
-
-    var duration = then.difference(now);
+    var duration = _getDurationToTime(11);
     print("Posting menu in [$duration");
     new Timer(duration, () async {
       print("Posting scheduled menu...");
 
       // Don't post on the weekend
-      if (then.weekday <= 5) {
+      if (new DateTime.now().weekday <= 5) {
         _postMenu(await _mattermost.getChannelId("lunch-it"));
       }
 
       // Schedule another post for tomorrow
       _schedulePost();
     });
+  }
+
+  Duration _getDurationToTime(int hour) {
+    var now = new DateTime.now();
+    var future = new DateTime(now.year, now.month, now.day, hour);
+    if (now.isAfter(future)) future = future.add(new Duration(days: 1));
+    return future.difference(now);
   }
 
   _parse(String sender, String channelId, String message) {
