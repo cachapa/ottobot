@@ -32,9 +32,9 @@ class AnnaHotel extends Restaurant {
     var tags = document.getElementsByClassName("pdf-download");
     var pdfUrl = tags[0].attributes["href"];
 
-    await Process.run("wget", ["-qO", "annahotel.pdf", pdfUrl]);
+    await Process.run("wget", ["-qO", "/tmp/annahotel.pdf", pdfUrl]);
     var result = await Process
-        .run("pdftohtml", ["-noframes", "-i", "-stdout", "annahotel.pdf"]);
+        .run("pdftohtml", ["-noframes", "-i", "-stdout", "/tmp/annahotel.pdf"]);
     document = parse(result.stdout);
     var nodes = document.body.nodes;
     List<Dish> dishes = new List();

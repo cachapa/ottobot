@@ -1,15 +1,11 @@
 import 'dart:async';
 
-import 'mattermost.dart';
+import 'package:mattermost_dart/mattermost_dart.dart';
 import 'restaurant.dart';
 
 import 'annahotel.dart';
 import 'cafecord.dart';
 import 'parkcafe.dart';
-
-main() async {
-  new LunchBot().listen();
-}
 
 class LunchBot {
   List<Restaurant> restaurants = [
@@ -18,10 +14,12 @@ class LunchBot {
     new ParkCafe(),
   ];
 
-  Mattermost _mattermost = new Mattermost();
+  Mattermost _mattermost;
+
+  LunchBot(this._mattermost);
 
   listen() async {
-    await _mattermost.connect(
+    await _mattermost.listen(
         (sender, channelId, message) => _parse(sender, channelId, message));
 
     // Notify we're online via direct message
@@ -62,10 +60,10 @@ class LunchBot {
     _mattermost.notifyTyping(channelId);
 
     var weekday = new DateTime.now().weekday;
-    var futures = new List();
+    var futures = new List<Future<Menu>>();
     restaurants.forEach((r) => futures.add(r.getMenu(weekday)));
     Future.wait(futures).then((menus) {
-      List<String> message = new List();
+      var message = new List<Menu>();
       menus.forEach((menu) => message.add(menu));
       _mattermost.post(channelId, message.join("\n---\n"));
     });
@@ -73,13 +71,14 @@ class LunchBot {
 
   _postHelp(String channelId) {
     var message = "**Currently available commands are:**\n";
-    message += "`lunch` Display lunch menus from restaurants around the area";
+    message += "* `lunch` Display lunch menus from nearby restaurants";
+    message += "* `about` About ottobot";
     _mattermost.post(channelId, message);
   }
 
   _postAbout(String channelId) {
     var message = "version `0.1`\n";
-    message += "[GitHub](https://github.com/cachapa/lunchbot)";
+    message += "[GitHub](https://github.com/cachapa/ottobot)";
     _mattermost.post(channelId, message);
   }
 }

@@ -1,7 +1,10 @@
-name: lunchbot
-description: A Mattermost bot for fetching lunch menus
+name: ottobot
+description: A Mattermost bot
 
 dependencies:
   http: "^0.11.3+16"
   html: any
-
+  
+  mattermost_dart:
+    git:
+      url: git@github.com:cachapa/mattermost_dart.git
