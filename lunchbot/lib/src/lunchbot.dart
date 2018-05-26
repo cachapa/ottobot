@@ -22,9 +22,6 @@ class LunchBot {
     await _mattermost.listen(
         (sender, channelId, message) => _parse(sender, channelId, message));
 
-    // Notify we're online via direct message
-    _mattermost.postDirectMessage("daniel.cachapa", "ottobot online");
-
     // Schedule a post at 11:00 the next day
     _schedulePost();
   }

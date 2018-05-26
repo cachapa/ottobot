@@ -2,3 +2,4 @@ const MM_URL = "mattermost.domain.tld";
 const MM_USERNAME = "username";
 const MM_ACCESS_TOKEN = "token";
 const MM_TEAM_NAME = "team";
+const MM_MAINTAINER_USERNAME = "admin";
