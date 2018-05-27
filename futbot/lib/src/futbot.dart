@@ -9,8 +9,9 @@ const UPDATE_INTERVAL = const Duration(seconds: 20);
 class Futbot {
   final Mattermost _mattermost;
   final FootbalData _footballData;
+  final String _channel;
 
-  Futbot(this._mattermost, String fdApiKey)
+  Futbot(this._mattermost, String fdApiKey, this._channel)
       : _footballData = new FootbalData(fdApiKey);
 
   listen() async {
@@ -101,21 +102,19 @@ class Futbot {
     if (matches.isEmpty) return;
     var post = "**Matches Today:**\n";
     matches.forEach((match) => post += "* ${_toSchedule(match)}\n");
-    _mattermost.postDirectMessage("daniel.cachapa", post);
+    _mattermost.postToChannel(_channel, post);
   }
 
   _notifyMatchStarted(Match match) {
-    _mattermost.postDirectMessage(
-        "daniel.cachapa", "`Kick-Off` ${_toResult(match)}");
+    _mattermost.postToChannel(_channel, "`Kick-Off` ${_toResult(match)}");
   }
 
   _notifyGoal(Match match) {
-    _mattermost.postDirectMessage("daniel.cachapa", _toResult(match));
+    _mattermost.postToChannel(_channel, _toResult(match));
   }
 
   _notifyMatchFinished(Match match) {
-    _mattermost.postDirectMessage(
-        "daniel.cachapa", "`Match Over` ${_toResult(match)}");
+    _mattermost.postToChannel(_channel, "`Match Over` ${_toResult(match)}");
   }
 
   String _toSchedule(Match match) {

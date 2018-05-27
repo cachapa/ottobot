@@ -15,8 +15,9 @@ class LunchBot {
   ];
 
   Mattermost _mattermost;
+  String _channel;
 
-  LunchBot(this._mattermost);
+  LunchBot(this._mattermost, _channel);
 
   listen() async {
     await _mattermost.listen(
@@ -34,7 +35,7 @@ class LunchBot {
 
       // Don't post on the weekend
       if (new DateTime.now().weekday <= 5) {
-        _postMenu(await _mattermost.getChannelId("lunch-it"));
+        _postMenu(await _mattermost.getChannelId(_channel));
       }
 
       // Schedule another post for tomorrow
