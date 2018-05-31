@@ -24,10 +24,12 @@ class FootbalData {
   }
 
   _get(url) async {
-    print("--> GET $url");
     var response =
         await http.get(MATCHES_URL, headers: {"X-Auth-Token": _apiKey});
-    print("<-- ${response.statusCode} ${response.reasonPhrase}");
+    if (response.statusCode != 200) {
+      print("--> GET $url");
+      print("<-- ${response.statusCode} ${response.reasonPhrase}");
+    }
     return json.decode(response.body);
   }
 }
