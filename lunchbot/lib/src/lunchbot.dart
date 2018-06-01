@@ -17,7 +17,7 @@ class LunchBot {
   Mattermost _mattermost;
   String _channel;
 
-  LunchBot(this._mattermost, _channel);
+  LunchBot(this._mattermost, this._channel);
 
   listen() async {
     await _mattermost.listen(
