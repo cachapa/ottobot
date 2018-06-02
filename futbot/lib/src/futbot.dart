@@ -84,8 +84,11 @@ class Futbot {
     var duration = _getDurationToTime(8);
     new Timer(duration, () async {
       print("Posting scheduled match...");
-      await _notifyScheduledMatches(await _getScheduledMatches());
-
+      try {
+        await _notifyScheduledMatches(await _getScheduledMatches());
+      } catch (e) {
+        print(e);
+      }
       // Schedule another post for tomorrow
       _schedulePost();
     });
@@ -122,9 +125,10 @@ class Futbot {
   }
 
   String _toResult(Match match) {
-    var middle = (match.status == Status.IN_PLAY || match.status == Status.FINISHED)
-        ? "`${match.homeResult} : ${match.awayResult}`"
-        : "x";
+    var middle =
+        (match.status == Status.IN_PLAY || match.status == Status.FINISHED)
+            ? "`${match.homeResult} : ${match.awayResult}`"
+            : "x";
     return "${_TEAM_FLAG[match.homeTeam]??"🏳️"} **${match.homeTeam}** $middle **${match.awayTeam}** ${_TEAM_FLAG[match.awayTeam]??"🏳️"}";
   }
 }

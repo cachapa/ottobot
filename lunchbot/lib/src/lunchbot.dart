@@ -35,7 +35,11 @@ class LunchBot {
 
       // Don't post on the weekend
       if (new DateTime.now().weekday <= 5) {
-        _postMenu(await _mattermost.getChannelId(_channel));
+        try {
+          await _postMenu(await _mattermost.getChannelId(_channel));
+        } catch (e) {
+          print(e);
+        }
       }
 
       // Schedule another post for tomorrow
