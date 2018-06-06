@@ -5,8 +5,7 @@ import 'package:http/http.dart' as http;
 
 class FootbalData {
   static const MATCHES_URL =
-      // "http://api.football-data.org/v1/competitions/467/fixtures?timeFrame=n1";
-      "http://api.football-data.org/v1/fixtures?timeFrame=n1";
+      "http://api.football-data.org/v1/competitions/467/fixtures?timeFrame=n1";
 
   final String _apiKey;
 
