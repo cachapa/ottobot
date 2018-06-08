@@ -29,7 +29,7 @@ class Futbot {
     });
 
     while (true) {
-      sleep(UPDATE_INTERVAL);
+      await new Future.delayed(UPDATE_INTERVAL);
       try {
         await _updateMatches(activeMatches);
       } catch (e) {
