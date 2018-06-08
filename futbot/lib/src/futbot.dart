@@ -39,34 +39,38 @@ class Futbot {
   }
 
   _updateMatches(activeMatches) async {
-    var matches = await _footballData.getMatchesToday();
+    try {
+      var matches = await _footballData.getMatchesToday();
 
-    matches.forEach((match) {
-      switch (match.status) {
-        case Status.IN_PLAY:
-          // Check if match was already active
-          if (activeMatches.containsKey(match.key)) {
-            // Check if result changed
-            if (activeMatches[match.key] != match) {
-              _notifyGoal(match);
+      matches.forEach((match) {
+        switch (match.status) {
+          case Status.IN_PLAY:
+            // Check if match was already active
+            if (activeMatches.containsKey(match.key)) {
+              // Check if result changed
+              if (activeMatches[match.key] != match) {
+                _notifyGoal(match);
+              }
+            } else {
+              _notifyMatchStarted(match);
             }
-          } else {
-            _notifyMatchStarted(match);
-          }
-          // Update match object
-          activeMatches[match.key] = match;
-          break;
+            // Update match object
+            activeMatches[match.key] = match;
+            break;
 
-        case Status.FINISHED:
-          // Check if the match was active
-          if (activeMatches.containsKey(match.key)) {
-            // Remove and notify match finished
-            activeMatches.remove(match.key);
-            _notifyMatchFinished(match);
-          }
-          break;
-      }
-    });
+          case Status.FINISHED:
+            // Check if the match was active
+            if (activeMatches.containsKey(match.key)) {
+              // Remove and notify match finished
+              activeMatches.remove(match.key);
+              _notifyMatchFinished(match);
+            }
+            break;
+        }
+      });
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<List<Match>> _getScheduledMatches() async {
