@@ -2,10 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
 
 class FootbalData {
   static const MATCHES_URL =
       "http://api.football-data.org/v1/competitions/467/fixtures?timeFrame=n1";
+
+  final Logger log = new Logger('futbot');
 
   final String _apiKey;
 
@@ -26,8 +29,8 @@ class FootbalData {
     var response =
         await http.get(MATCHES_URL, headers: {"X-Auth-Token": _apiKey});
     if (response.statusCode != 200) {
-      print("--> GET $url");
-      print("<-- ${response.statusCode} ${response.reasonPhrase}");
+      log.warning(
+          "--> GET $url\n<-- ${response.statusCode} ${response.reasonPhrase}");
     }
     return json.decode(response.body);
   }

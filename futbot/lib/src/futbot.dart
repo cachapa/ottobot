@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:logging/logging.dart';
+
 import 'football-data.dart';
 import 'package:mattermost_dart/mattermost_dart.dart';
 
@@ -10,6 +12,8 @@ class Futbot {
   final Mattermost _mattermost;
   final FootbalData _footballData;
   final String _channel;
+
+  final Logger log = new Logger('futbot');
 
   Futbot(this._mattermost, String fdApiKey, this._channel)
       : _footballData = new FootbalData(fdApiKey);
@@ -33,7 +37,7 @@ class Futbot {
       try {
         await _updateMatches(activeMatches);
       } catch (e) {
-        print(e);
+        log.warning("_listen: $e");
       }
     }
   }
@@ -69,7 +73,7 @@ class Futbot {
         }
       });
     } catch (e) {
-      print(e);
+      log.warning("_updateMatches: $e");
     }
   }
 
@@ -87,11 +91,11 @@ class Futbot {
   _schedulePost() async {
     var duration = _getDurationToTime(8);
     new Timer(duration, () async {
-      print("Posting scheduled match...");
+      log.info("Posting scheduled match...");
       try {
         await _notifyScheduledMatches(await _getScheduledMatches());
       } catch (e) {
-        print(e);
+        log.warning("_schedulePost: $e");
       }
       // Schedule another post for tomorrow
       _schedulePost();
