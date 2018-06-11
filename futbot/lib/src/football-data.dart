@@ -6,7 +6,7 @@ import 'package:logging/logging.dart';
 
 class FootbalData {
   static const MATCHES_URL =
-      "http://api.football-data.org/v1/competitions/467/fixtures?timeFrame=n1";
+      "https://api.football-data.org/v1/competitions/467/fixtures?timeFrame=n1";
 
   final Logger log = new Logger('football-data');
 
