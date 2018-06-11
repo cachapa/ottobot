@@ -30,7 +30,8 @@ class FootbalData {
         await http.get(MATCHES_URL, headers: {"X-Auth-Token": _apiKey});
     if (response.statusCode != 200) {
       log.warning(
-          "--> GET $url\n<-- ${response.statusCode} ${response.reasonPhrase}");
+          "--> GET $url\n<-- ${response.statusCode} ${response.reasonPhrase} ${response.body.toString()}");
+          throw new Exception("Error fetching matches");
     }
     return json.decode(response.body);
   }
