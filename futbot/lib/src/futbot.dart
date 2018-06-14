@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:intl/intl.dart';
 import 'package:logging/logging.dart';
 
 import 'football-data.dart';
@@ -129,7 +130,8 @@ class Futbot {
   }
 
   String _toSchedule(Match match) {
-    return "`${match.date.hour}:${match.date.minute}` ${_toResult(match)}";
+    var time = new DateFormat('Hm').format(match.date.toLocal());
+    return "`$time` ${_toResult(match)}";
   }
 
   String _toResult(Match match) {
