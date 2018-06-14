@@ -1,23 +1,26 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:intl/intl.dart';
 import 'package:logging/logging.dart';
 
 import 'football-data.dart';
+import 'kicktipp.dart';
+import 'match.dart';
+
 import 'package:mattermost_dart/mattermost_dart.dart';
 
 const UPDATE_INTERVAL = const Duration(seconds: 20);
 
 class Futbot {
   final Mattermost _mattermost;
-  final FootbalData _footballData;
+  final MatchesApi _matchesApi;
   final String _channel;
 
   final Logger log = new Logger('futbot');
 
   Futbot(this._mattermost, String fdApiKey, this._channel)
-      : _footballData = new FootbalData(fdApiKey);
+      // : _matchesApi = new FootbalData(fdApiKey);
+      : _matchesApi = new KickTipp();
 
   listen() async {
     Map<String, Match> activeMatches = new Map();
@@ -26,7 +29,7 @@ class Futbot {
     _schedulePost();
 
     // Seed active match list. This avoids triggering new messages on app restart
-    var matches = await _footballData.getMatchesToday();
+    var matches = await _matchesApi.getMatchesToday();
     matches.forEach((match) {
       if (match.status == Status.IN_PLAY) {
         activeMatches[match.key] = match;
@@ -45,7 +48,7 @@ class Futbot {
 
   _updateMatches(activeMatches) async {
     try {
-      var matches = await _footballData.getMatchesToday();
+      var matches = await _matchesApi.getMatchesToday();
 
       matches.forEach((match) {
         switch (match.status) {
@@ -80,9 +83,9 @@ class Futbot {
 
   Future<List<Match>> _getScheduledMatches() async {
     var scheduled = new List<Match>();
-    var matches = await _footballData.getMatchesToday();
-    matches.forEach((Match match) {
-      if (match.status == Status.SCHEDULED || match.status == Status.TIMED) {
+    var matches = await _matchesApi.getMatchesToday();
+    matches.forEach((match) {
+      if (match.status == Status.SCHEDULED) {
         scheduled.add(match);
       }
     });
