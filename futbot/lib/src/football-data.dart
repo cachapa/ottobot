@@ -61,7 +61,7 @@ class Match {
   get status => _status;
   get homeTeam => _homeTeam;
   get homeResult => _homeResult;
-  get awayTeam => awayTeam;
+  get awayTeam => _awayTeam;
   get awayResult => _awayResult;
   get key => "$_date $_homeTeam $_awayTeam";
 
