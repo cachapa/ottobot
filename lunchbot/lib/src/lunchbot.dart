@@ -29,7 +29,7 @@ class LunchBot {
 
   _schedulePost() {
     var duration = _getDurationToTime(11);
-    print("Posting menu in [$duration");
+    print("Posting menu in $duration");
     new Timer(duration, () async {
       print("Posting scheduled menu...");
 

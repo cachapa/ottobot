@@ -91,6 +91,7 @@ class Futbot {
 
   _schedulePost() async {
     var duration = _getDurationToTime(8);
+    log.info("Posting upcoming matches in $duration");
     new Timer(duration, () async {
       log.info("Posting scheduled match...");
       try {
