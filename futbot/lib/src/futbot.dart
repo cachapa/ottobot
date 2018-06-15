@@ -117,12 +117,12 @@ class Futbot {
   _notifyScheduledMatches(List<Match> matches) {
     if (matches.isEmpty) return;
     var post = "**Matches Today:**\n";
-    matches.forEach((match) => post += "* ${_toSchedule(match)}\n");
+    matches.forEach((match) => post += "${_toSchedule(match)}\n");
     _mattermost.postToChannel(_channel, post);
   }
 
   _notifyMatchStarted(Match match) {
-    _mattermost.postToChannel(_channel, "`Kick-Off` ${_toResult(match)}");
+    _mattermost.postToChannel(_channel, "**Kick-Off**\n${_toResult(match)}");
   }
 
   _notifyGoal(Match match) {
@@ -130,7 +130,7 @@ class Futbot {
   }
 
   _notifyMatchFinished(Match match) {
-    _mattermost.postToChannel(_channel, "`Match Over` ${_toResult(match)}");
+    _mattermost.postToChannel(_channel, "**Match Over**\n${_toResult(match)}");
   }
 
   String _toSchedule(Match match) {
