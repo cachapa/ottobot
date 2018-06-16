@@ -142,6 +142,6 @@ class Futbot {
 
   String _toLeaderboard(Iterable<Player> leaderboard) {
     if (leaderboard == null || leaderboard.isEmpty) return "";
-    return "**[Leaderboard](https://www.kicktipp.de/ottonova-wm-2018/tippuebersicht)**\n${leaderboard.join("\n")})";
+    return "${leaderboard.join("\n")}\n[more…](https://www.kicktipp.de/ottonova-wm-2018/tippuebersicht)";
   }
 }
