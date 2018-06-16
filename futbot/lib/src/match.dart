@@ -69,6 +69,7 @@ const Map<String, String> _TEAM_FLAG = const {
   "Iran": "🇮🇷",
   "Japan": "🇯🇵",
   "Korea Republic": "🇰🇷",
+  "South Korea": "🇰🇷",
   "Mexico": "🇲🇽",
   "Morocco": "🇲🇦",
   "Nigeria": "🇳🇬",

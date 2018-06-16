@@ -146,7 +146,7 @@ const Map<String, String> _TEAM_TRANSLATION = const {
   "Island": "Iceland",
   "Iran": "Iran",
   "Japan": "Japan",
-  "Südkorea": "Korea Republic",
+  "Südkorea": "South Korea",
   "Mexiko": "Mexico",
   "Marokko": "Morocco",
   "Nigeria": "Nigeria",
