@@ -16,8 +16,6 @@ main(List<String> args) async {
 }
 
 class KickTipp extends MatchesApi {
-  static const MATCHES_URL =
-      "https://www.kicktipp.de/wm18-tippspiel/tippspielplan";
   static const LEADERBOARD_URL =
       "https://www.kicktipp.de/ottonova-wm-2018/tippuebersicht";
 
@@ -60,10 +58,10 @@ class KickTipp extends MatchesApi {
   }
 
   Future<List<Match>> getMatches() async {
-    var response = await http.get(MATCHES_URL);
+    var response = await http.get(_getMatchesUrl());
     if (response.statusCode != 200) {
       log.warning(
-          "--> GET $MATCHES_URL\n<-- ${response.statusCode} ${response.reasonPhrase} ${response.body.toString()}");
+          "--> GET ${response.request}\n<-- ${response.statusCode} ${response.reasonPhrase} ${response.body.toString()}");
       throw new Exception("Error fetching matches");
     }
 
@@ -109,7 +107,28 @@ class KickTipp extends MatchesApi {
         match.date.day == today.day);
     return matches;
   }
+
+  String _getMatchesUrl() {
+    var now = new DateTime.now();
+    int matchDay =
+        _MATCH_DAYS.takeWhile((date) => now.isBefore(date)).length + 2;
+    return "https://www.kicktipp.de/wm18-tippspiel/tippspielplan?&spieltagIndex=$matchDay";
+  }
 }
+
+List<DateTime> _MATCH_DAYS = [
+  new DateTime(2018, 6, 17),
+  new DateTime(2018, 6, 19),
+  new DateTime(2018, 6, 21),
+  new DateTime(2018, 6, 23),
+  new DateTime(2018, 6, 25),
+  new DateTime(2018, 6, 27),
+  new DateTime(2018, 6, 29),
+  new DateTime(2018, 7, 4),
+  new DateTime(2018, 7, 8),
+  new DateTime(2018, 7, 12),
+  new DateTime(2018, 7, 16),
+];
 
 const Map<String, String> _TEAM_TRANSLATION = const {
   "Argentinien": "Argentina",
