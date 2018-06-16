@@ -18,9 +18,9 @@ class Futbot {
 
   final Logger log = new Logger('futbot');
 
-  Futbot(this._mattermost, String fdApiKey, this._channel)
+  Futbot(this._mattermost, String fdApiKey, String ktApiKey, this._channel)
       // : _matchesApi = new FootbalData(fdApiKey);
-      : _matchesApi = new KickTipp();
+      : _matchesApi = new KickTipp(ktApiKey);
 
   listen() async {
     Map<String, Match> activeMatches = new Map();
@@ -122,62 +122,26 @@ class Futbot {
   }
 
   _notifyMatchStarted(Match match) {
-    _mattermost.postToChannel(_channel, "**Kick-Off**\n${_toResult(match)}");
+    _mattermost.postToChannel(_channel, "**Kick-Off**\n$match");
   }
 
   _notifyGoal(Match match) {
-    _mattermost.postToChannel(_channel, _toResult(match));
+    _mattermost.postToChannel(_channel, match.toString());
   }
 
-  _notifyMatchFinished(Match match) {
-    _mattermost.postToChannel(_channel, "**Match Over**\n${_toResult(match)}");
+  _notifyMatchFinished(Match match) async {
+    var leaderboard = await _matchesApi.getShortLeaderboard();
+    _mattermost.postToChannel(_channel,
+        "**Match Over**\n$match\n\n${_toLeaderboard(leaderboard)}");
   }
 
   String _toSchedule(Match match) {
     var time = new DateFormat('Hm').format(match.date.toLocal());
-    return "`$time` ${_toResult(match)}";
+    return "`$time` $match";
   }
 
-  String _toResult(Match match) {
-    var middle =
-        (match.status == Status.IN_PLAY || match.status == Status.FINISHED)
-            ? "`${match.homeResult} : ${match.awayResult}`"
-            : "x";
-    return "${_TEAM_FLAG[match.homeTeam]??"🏳️"} **${match.homeTeam}** $middle **${match.awayTeam}** ${_TEAM_FLAG[match.awayTeam]??"🏳️"}";
+  String _toLeaderboard(Iterable<Player> leaderboard) {
+    if (leaderboard == null || leaderboard.isEmpty) return "";
+    return "**[Leaderboard](https://www.kicktipp.de/ottonova-wm-2018/tippuebersicht)**\n${leaderboard.join("\n")})";
   }
 }
-
-const Map<String, String> _TEAM_FLAG = const {
-  "Argentina": "🇦🇷",
-  "Australia": "🇦🇺",
-  "Belgium": "🇧🇪",
-  "Brazil": "🇧🇷",
-  "Colombia": "🇨🇴",
-  "Costa Rica": "🇨🇷",
-  "Croatia": "🇭🇷",
-  "Denmark": "🇩🇰",
-  "Egypt": "🇪🇬",
-  "England": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
-  "France": "🇫🇷",
-  "Germany": "🇩🇪",
-  "Iceland": "🇮🇸",
-  "Iran": "🇮🇷",
-  "Japan": "🇯🇵",
-  "Korea Republic": "🇰🇷",
-  "Mexico": "🇲🇽",
-  "Morocco": "🇲🇦",
-  "Nigeria": "🇳🇬",
-  "Panama": "🇵🇦",
-  "Peru": "🇵🇪",
-  "Poland": "🇵🇱",
-  "Portugal": "🇵🇹",
-  "Russia": "🇷🇺",
-  "Saudi Arabia": "🇸🇦",
-  "Senegal": "🇸🇳",
-  "Serbia": "🇷🇸",
-  "Spain": "🇪🇸",
-  "Sweden": "🇸🇪",
-  "Switzerland": "🇨🇭",
-  "Tunisia": "🇹🇳",
-  "Uruguay": "🇺🇾",
-};

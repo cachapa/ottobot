@@ -9,17 +9,55 @@ import 'dart:convert';
 import 'match.dart';
 
 main(List<String> args) async {
-  var matches = await new KickTipp().getMatchesToday();
-  matches.forEach((match) => print(match));
+  // var matches = await new KickTipp().getMatchesToday();
+  // print(matches.join("\n"));
+  // var players = await new KickTipp().getShortLeaderboard();
+  // print(players.join("\n"));
 }
 
 class KickTipp extends MatchesApi {
   static const MATCHES_URL =
       "https://www.kicktipp.de/wm18-tippspiel/tippspielplan";
+  static const LEADERBOARD_URL =
+      "https://www.kicktipp.de/ottonova-wm-2018/tippuebersicht";
 
   final Logger log = new Logger('kicktipp');
 
-  DateFormat format = new DateFormat("dd.MM.y HH:mm");
+  final DateFormat format = new DateFormat("dd.MM.y HH:mm");
+
+  final String _apiKey;
+
+  KickTipp(this._apiKey);
+
+  @override
+  Future<Iterable<Player>> getShortLeaderboard() async {
+    return (await getLeaderboard()).takeWhile((player) => player.position <= 3);
+  }
+
+  Future<List<Player>> getLeaderboard() async {
+    var response =
+        await http.get(LEADERBOARD_URL, headers: {"cookie": "login=$_apiKey"});
+    if (response.statusCode != 200) {
+      log.warning(
+          "--> GET ${response.request}\n<-- ${response.statusCode} ${response.reasonPhrase} ${response.body.toString()}");
+      throw new Exception("Error fetching leaderboard");
+    }
+
+    var document = parse(utf8.decode(response.bodyBytes));
+    var table = document.getElementsByTagName("tbody");
+    var rows = table[1].children;
+
+    List<Player> players = new List();
+    rows.forEach((row) {
+      int position = int.tryParse(row.children[0].text);
+      String name = row.children[2].firstChild.text;
+      int points = int.tryParse(row.children[row.children.length - 1].text);
+
+      players.add(new Player(position, name, points));
+    });
+
+    return players;
+  }
 
   Future<List<Match>> getMatches() async {
     var response = await http.get(MATCHES_URL);

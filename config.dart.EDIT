@@ -5,3 +5,5 @@ const MM_TEAM_NAME = "team";
 const MM_MAINTAINER_USERNAME = "admin";
 
 const FD_KEY = "key";
+
+const KT_KEY = "key";

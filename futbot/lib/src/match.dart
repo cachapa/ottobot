@@ -2,40 +2,87 @@ import 'dart:async';
 
 abstract class MatchesApi {
   Future<List<Match>> getMatchesToday();
+  Future<Iterable<Player>> getShortLeaderboard();
 }
 
 class Match {
-  DateTime _date;
-  String _homeTeam;
-  int _homeResult;
-  String _awayTeam;
-  int _awayResult;
-  Status _status;
+  final DateTime date;
+  final String homeTeam;
+  final int homeResult;
+  final String awayTeam;
+  final int awayResult;
+  final Status status;
+  final String key;
 
-  Match(this._date, this._homeTeam, int homeResult, this._awayTeam,
-      int awayResult, this._status)
-      : _homeResult = homeResult ?? 0,
-        _awayResult = awayResult ?? 0;
-
-  get date => _date;
-  get status => _status;
-  get homeTeam => _homeTeam;
-  get homeResult => _homeResult;
-  get awayTeam => _awayTeam;
-  get awayResult => _awayResult;
-  get key => "$_date $_homeTeam $_awayTeam";
+  Match(this.date, this.homeTeam, int homeResult, this.awayTeam, int awayResult,
+      this.status)
+      : this.homeResult = homeResult ?? 0,
+        this.awayResult = awayResult ?? 0,
+        this.key = "$date $homeTeam $awayTeam";
 
   bool operator ==(other) =>
-      _date == other.date &&
-      _homeTeam == other._homeTeam &&
-      _awayTeam == other._awayTeam &&
-      _homeResult == other._homeResult &&
-      _awayResult == other._awayResult;
+      date == other.date &&
+      homeTeam == other.homeTeam &&
+      awayTeam == other.awayTeam &&
+      homeResult == other.homeResult &&
+      awayResult == other.awayResult;
 
   @override
   String toString() {
-    return "${_date.toLocal()} $_status $_homeTeam $_homeResult : $_awayResult $_awayTeam";
+    var middle = (status == Status.IN_PLAY || status == Status.FINISHED)
+        ? "`${homeResult} : ${awayResult}`"
+        : "x";
+    return "${_TEAM_FLAG[homeTeam]??"🏳️"} **${homeTeam}** $middle **${awayTeam}** ${_TEAM_FLAG[awayTeam]??"🏳️"}";
+  }
+}
+
+class Player {
+  final int position;
+  final String name;
+  final int points;
+
+  Player(this.position, this.name, this.points);
+
+  @override
+  String toString() {
+    String emojiPosition = position == 1 ? "🥇" : position == 2 ? "🥈" : position == 3 ? "🥉" : position;
+    return "$emojiPosition `${points}` **${name}**";
   }
 }
 
 enum Status { SCHEDULED, IN_PLAY, FINISHED }
+
+const Map<String, String> _TEAM_FLAG = const {
+  "Argentina": "🇦🇷",
+  "Australia": "🇦🇺",
+  "Belgium": "🇧🇪",
+  "Brazil": "🇧🇷",
+  "Colombia": "🇨🇴",
+  "Costa Rica": "🇨🇷",
+  "Croatia": "🇭🇷",
+  "Denmark": "🇩🇰",
+  "Egypt": "🇪🇬",
+  "England": "🏴󠁧󠁢󠁥󠁮󠁧󠁿",
+  "France": "🇫🇷",
+  "Germany": "🇩🇪",
+  "Iceland": "🇮🇸",
+  "Iran": "🇮🇷",
+  "Japan": "🇯🇵",
+  "Korea Republic": "🇰🇷",
+  "Mexico": "🇲🇽",
+  "Morocco": "🇲🇦",
+  "Nigeria": "🇳🇬",
+  "Panama": "🇵🇦",
+  "Peru": "🇵🇪",
+  "Poland": "🇵🇱",
+  "Portugal": "🇵🇹",
+  "Russia": "🇷🇺",
+  "Saudi Arabia": "🇸🇦",
+  "Senegal": "🇸🇳",
+  "Serbia": "🇷🇸",
+  "Spain": "🇪🇸",
+  "Sweden": "🇸🇪",
+  "Switzerland": "🇨🇭",
+  "Tunisia": "🇹🇳",
+  "Uruguay": "🇺🇾",
+};

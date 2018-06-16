@@ -67,4 +67,9 @@ class FootbalData extends MatchesApi {
 
     return new Match(date, homeTeam, homeResult, awayTeam, awayResult, status);
   }
+
+  @override
+  Future<Iterable<Player>> getShortLeaderboard() {
+    return null;
+  }
 }

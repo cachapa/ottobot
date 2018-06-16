@@ -15,7 +15,7 @@ main() async {
       true, MM_URL, MM_USERNAME, MM_ACCESS_TOKEN, MM_TEAM_NAME);
 
   new LunchBot(mattermost, "lunch-it").listen();
-  new Futbot(mattermost, FD_KEY, "wm-2018").listen();
+  new Futbot(mattermost, FD_KEY, KT_KEY, "wm-2018").listen();
 
   // Notify the maintainer that we're online via direct message
   mattermost.postDirectMessage(MM_MAINTAINER_USERNAME, "ottobot online");
