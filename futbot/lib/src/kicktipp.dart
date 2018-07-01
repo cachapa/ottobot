@@ -9,9 +9,12 @@ import 'dart:convert';
 import 'match.dart';
 
 main(List<String> args) async {
-  // var matches = await new KickTipp().getMatchesToday();
+  var kicktipp = new KickTipp("");
+
+  // var matches = await kicktipp.getMatchesToday();
   // print(matches.join("\n"));
-  // var players = await new KickTipp().getShortLeaderboard();
+  
+  // var players = kicktipp.getShortLeaderboard();
   // print(players.join("\n"));
 }
 
@@ -79,7 +82,7 @@ class KickTipp extends MatchesApi {
       String awayTeam = row.children[3].text;
 
       // Result and status child
-      var resultChild = row.children[5].firstChild.firstChild;
+      var resultChild = row.children[4].firstChild.firstChild;
       int homeResult = int.tryParse(resultChild.children[0].text);
       int awayResult = int.tryParse(resultChild.children[2].text);
 
