@@ -17,7 +17,7 @@ class CafeCord extends Restaurant {
     var response = await http.get(MENU_URL);
     print("<-- ${response.statusCode} OK\n");
 
-    var document = parse(UTF8.decode(response.bodyBytes));
+    var document = parse(utf8.decode(response.bodyBytes));
     var tags = document.getElementsByClassName("col-xs-12 col-sm-7");
     var menuTags = tags[0].children;
 

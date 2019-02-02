@@ -29,7 +29,7 @@ class ParkCafe extends Restaurant {
 
     var weekdayName = WEEKDAYS[weekday];
 
-    var document = parse(UTF8.decode(response.bodyBytes));
+    var document = parse(utf8.decode(response.bodyBytes));
     var tags = document.getElementsByTagName("td");
     List<Dish> dishes = new List();
     for (int i = 0; i < tags.length; i++) {
@@ -39,7 +39,7 @@ class ParkCafe extends Restaurant {
             tags[i + 4].text.trim(), "Mittagsgericht", tags[i + 5].text.trim()));
         dishes.add(
             new Dish(
-              HTML_ESCAPE.convert(tags[i + 7].text.trim()), "Low Carb", tags[i + 8].text.trim()));
+              htmlEscape.convert(tags[i + 7].text.trim()), "Low Carb", tags[i + 8].text.trim()));
         break;
       }
     }

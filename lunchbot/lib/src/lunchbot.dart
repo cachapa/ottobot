@@ -66,7 +66,7 @@ class LunchBot {
     _mattermost.notifyTyping(channelId);
 
     var weekday = new DateTime.now().weekday;
-    var futures = new List<Future<Menu>>();
+    var futures = new List<Future>();
     restaurants.forEach((r) => futures.add(r.getMenu(weekday)));
     Future.wait(futures).then((menus) {
       var message = new List<Menu>();
