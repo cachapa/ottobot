@@ -14,3 +14,6 @@ doc/api/
 
 # Avoid exposing the config file where credentials are stored
 config.dart
+
+# Ignore Idea project files
+.idea
