@@ -1,4 +1,5 @@
-import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 import 'package:html/parser.dart' show parse;
 import 'dart:io';
 
@@ -23,12 +24,20 @@ class AnnaHotel extends Restaurant {
   getMenu(int weekday) async {
     print("--> GET $RESTAURANT_URL");
 
-    var response = await http.get(RESTAURANT_URL);
-    print("<-- ${response.statusCode} OK\n");
+    // Ignore "bad" certificate
+    var client = new HttpClient();
+    client.badCertificateCallback = (_,__,___) => true;
+    var request = await client.getUrl(Uri.parse(RESTAURANT_URL));
+    var response = await request.close();
+    var body = "";
+    await for (var contents in response.transform(Utf8Decoder())) {
+      body += contents;
+    }
+    print(body);
 
     var weekdayName = WEEKDAYS[weekday];
 
-    var document = parse(response.body);
+    var document = parse(body);
     var tags = document.getElementsByClassName("pdf-download");
     var pdfUrl = tags[0].attributes["href"];
 
